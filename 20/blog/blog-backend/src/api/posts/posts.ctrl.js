@@ -1,8 +1,7 @@
-const Post = require('models/post');
-const Joi = require('joi');
+const Post = require("models/post");
+const Joi = require("joi");
 
-
-const { ObjectId } = require('mongoose').Types;
+const { ObjectId } = require("mongoose").Types;
 
 exports.checkObjectId = (ctx, next) => {
   const { id } = ctx.params;
@@ -18,23 +17,24 @@ exports.checkObjectId = (ctx, next) => {
 
 exports.checkLogin = (ctx, next) => {
   if (!ctx.session.logged) {
-    ctx.status = 401; // Unauthorized
+    ctx.status = 401;
     return null;
   }
   return next();
 };
 
-
 /*
   POST /api/posts
   { title, body, tags }
 */
-exports.write = async (ctx) => {
+exports.write = async ctx => {
   // 객체가 지닌 값들을 검증합니다.
   const schema = Joi.object().keys({
     title: Joi.string().required(), // 뒤에 required를 붙여주면 필수 항목이라는 의미
     body: Joi.string().required(),
-    tags: Joi.array().items(Joi.string()).required() // 문자열 배열
+    tags: Joi.array()
+      .items(Joi.string())
+      .required() // 문자열 배열
   });
 
   // 첫 번째 파라미터는 검증할 객체, 두 번째는 스키마
@@ -51,7 +51,9 @@ exports.write = async (ctx) => {
 
   // 새 Post 인스턴스를 생성합니다.
   const post = new Post({
-    title, body, tags
+    title,
+    body,
+    tags
   });
 
   try {
@@ -63,19 +65,20 @@ exports.write = async (ctx) => {
   }
 };
 
-
 /*
   GET /api/posts
 */
-exports.list = async (ctx) => {
+exports.list = async ctx => {
   // page가 주어지지 않았다면 1로 간주
   // query는 문자열 형태로 받아 오므로 숫자로 변환
   const page = parseInt(ctx.query.page || 1, 10);
   const { tag } = ctx.query;
 
-  const query = tag ? {
-    tags: tag // tags 배열에 tag를 가진 포스트 찾기
-  } : {};
+  const query = tag
+    ? {
+        tags: tag // tags 배열에 tag를 가진 포스트 찾기
+      }
+    : {};
 
   // 잘못된 페이지가 주어졌다면 에러
   if (page < 1) {
@@ -98,7 +101,7 @@ exports.list = async (ctx) => {
     ctx.body = posts.map(limitBodyLength);
     // 마지막 페이지 알려 주기
     // ctx.set은 response header를 설정해줍니다.
-    ctx.set('Last-Page', Math.ceil(postCount / 10));
+    ctx.set("Last-Page", Math.ceil(postCount / 10));
   } catch (e) {
     ctx.throw(500, e);
   }
@@ -107,7 +110,7 @@ exports.list = async (ctx) => {
 /*
   GET /api/posts/:id
 */
-exports.read = async (ctx) => {
+exports.read = async ctx => {
   const { id } = ctx.params;
   try {
     const post = await Post.findById(id).exec();
@@ -122,11 +125,10 @@ exports.read = async (ctx) => {
   }
 };
 
-
 /*
   DELETE /api/posts/:id
 */
-exports.remove = async (ctx) => {
+exports.remove = async ctx => {
   const { id } = ctx.params;
   try {
     await Post.findByIdAndRemove(id).exec();
@@ -136,12 +138,11 @@ exports.remove = async (ctx) => {
   }
 };
 
-
 /*
   PATCH /api/posts/:id
   { title, body, tags }
 */
-exports.update = async (ctx) => {
+exports.update = async ctx => {
   const { id } = ctx.params;
   try {
     const post = await Post.findByIdAndUpdate(id, ctx.request.body, {
