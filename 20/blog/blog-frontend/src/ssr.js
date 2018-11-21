@@ -6,6 +6,7 @@ import configure from "store/configure";
 import routes from "./routes";
 import axios from "axios";
 import transit from "transit-immutable-js";
+import { Helmet } from "react-helmet";
 
 import App from "components/App";
 
@@ -31,19 +32,25 @@ const render = async ctx => {
     await Promise.all(promises);
   } catch (e) {}
 
+  const context = {};
   const html = ReactDOMServer.renderToString(
     <Provider store={store}>
-      <StaticRouter location={url}>
+      <StaticRouter location={url} context={context}>
         <App />
       </StaticRouter>
     </Provider>
   );
 
+  if (context.isNotFound) {
+    ctx.status = 404;
+  }
+
+  const helmet = Helmet.renderStatic();
   const preloadedState = JSON.stringify(
     transit.toJSON(store.getState())
   ).replace(/</g, "\\u003c");
 
-  return { html, preloadedState };
+  return { html, preloadedState, helmet };
 };
 
 export default render;

@@ -5,6 +5,8 @@ import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import * as postActions from "store/modules/post";
 import shouldCancel from "lib/shouldCancel";
+import removeMd from "remove-markdown";
+import { Helmet } from "react-helmet";
 
 class Post extends Component {
   initialize = async () => {
@@ -28,6 +30,12 @@ class Post extends Component {
     const { title, body, publishedDate, tags } = post.toJS();
     return (
       <div>
+        {body && (
+          <Helmet>
+            <title>{title}</title>
+            <meta name="description" content={removeMd(body).slice(0, 200)} />
+          </Helmet>
+        )}
         <PostInfo title={title} publishedDate={publishedDate} tags={tags} />
         <PostBody body={body} />
       </div>
