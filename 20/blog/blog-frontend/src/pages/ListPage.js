@@ -2,6 +2,8 @@ import React from "react";
 import PageTemplate from "components/common/PageTemplate/PageTemplate";
 import ListWrapper from "components/list/ListWrapper";
 import ListContainer from "containers/list/ListContainer";
+import * as listActions from "store/modules/list";
+import { bindActionCreators } from "redux";
 
 const ListPage = ({ match }) => {
   const { page = 1, tag } = match.params;
@@ -14,4 +16,12 @@ const ListPage = ({ match }) => {
   );
 };
 
+ListPage.preload = (dispatch, params) => {
+  const { page = 1, tag } = params;
+  const ListActions = bindActionCreators(listActions, dispatch);
+  return ListActions.getPostList({
+    page,
+    tag
+  });
+};
 export default ListPage;

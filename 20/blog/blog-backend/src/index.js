@@ -6,6 +6,11 @@ const bodyParser = require("koa-bodyparser");
 const mongoose = require("mongoose");
 const api = require("./api");
 const session = require("koa-session");
+const ssr = require("./ssr");
+const path = require("path");
+const serve = require("koa-static");
+
+const staticPath = path.join(__dirname, "../../blog-frontend/build");
 
 const app = new Koa();
 const router = new Router();
@@ -31,6 +36,7 @@ mongoose
 
 // 라우터 설정
 router.use("/api", api.routes()); // api 라우트 적용
+router.get("/", ssr);
 
 // 라우터 적용 전에 bodyParser 적용
 app.use(bodyParser());
@@ -44,6 +50,8 @@ app.keys = [signKey];
 
 // app 인스턴스에 라우터 적용
 app.use(router.routes()).use(router.allowedMethods());
+app.use(serve(staticPath));
+app.use(ssr);
 
 app.listen(port, () => {
   console.log("listening to port", port);
